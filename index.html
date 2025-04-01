@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Modelo 3D en Realidad Aumentada V.2</title>
+    <title>Modelo 3D en Realidad Aumentada</title>
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <style>
         body {
@@ -34,26 +34,67 @@
             cursor: pointer;
             margin: 10px;
         }
+        /* Estilos para los botones de textura */
+        .texture-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .texture-btn {
+            background: #e0e0e0;
+            color: #333;
+            border: 2px solid #6e48aa;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .texture-btn.active {
+            background: #6e48aa;
+            color: white;
+            border-color: #6e48aa;
+        }
     </style>
 </head>
 <body>
-    <h1>Modelo 3D en Realidad Aumentada</h1>
+    <h1>Modelo 3D en Realidad Aumentada v.2</h1>
     <p>¡Decora tu espacio con este diseño en Realidad Aumentada!</p>
     
     <model-viewer
         src="GLB_PlantaSuculenta.glb"
-	alt="Planta suculenta en macetero de diseño - Modelo 3D para decoración"
-	loading="eager"
-	shadow-intensity="1"
-	auto-rotate
-	rotation-per-second="30deg"
-        ar
+        alt="Planta suculenta en macetero de diseño - Modelo 3D para decoración" // por si no carga el modelo
+        loading="eager" //para que cargue mas rapido 
+        shadow-intensity="1" //sombra del modelo 3D
+        auto-rotate //giro automatico
+        rotation-per-second="30deg" //velocidad de giro
+        ar //opcion de realidad aumentada
         ar-modes="scene-viewer quick-look"
         camera-controls
         environment-image="neutral"
-	interaction-prompt="none"
+        interaction-prompt="none"
     >
         <button slot="ar-button">Ver en AR</button>
     </model-viewer>
+
+    <!-- Botones de selección de textura -->
+    <div class="texture-buttons">
+        <button class="texture-btn active" id="btn-azul">Macetero Azul</button>
+        <button class="texture-btn" id="btn-rojo">Macetero Rojo</button>
+    </div>
+
+    <script>
+        // Función para alternar el estado "active" de los botones
+        document.getElementById('btn-azul').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('btn-rojo').classList.remove('active');
+        });
+
+        document.getElementById('btn-rojo').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('btn-azul').classList.remove('active');
+        });
+    </script>
 </body>
 </html>
