@@ -1,52 +1,158 @@
-<script type="module">
-    const REPO_URL = "https://testachile.github.io/ModeloAR2/";
-    const textureCache = {};
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Personalizador de Plantas Suculentas</title>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f9f9f9;
+        }
+        h1 {
+            color: #6e48aa;
+        }
+        .texture-buttons {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .texture-btn {
+            background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.3s;
+        }
+        .texture-btn:hover {
+            transform: scale(1.05);
+        }
+        model-viewer {
+            width: 100%;
+            height: 70vh;
+            margin: 0 auto;
+            border: 1px solid #ddd; /* Para visualizar el contenedor */
+        }
+        #ar-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Personaliza tu Planta Suculenta</h1>
+    <p class="loading" id="loading-text">Cargando modelo 3D...</p>
     
-    async function loadTexture(textureName) {
-        const textureUrl = `${REPO_URL}${textureName}`;
-        if (!textureCache[textureUrl]) {
-            try {
-                console.log("Cargando textura:", textureUrl); // Debug
-                const response = await fetch(textureUrl);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const blob = await response.blob();
-                textureCache[textureUrl] = await createImageBitmap(blob);
-                console.log("Textura cargada con éxito:", textureName); // Debug
-            } catch (error) {
-                console.error("Error cargando textura:", error);
-                return null;
-            }
-        }
-        return textureCache[textureUrl];
-    }
+    <model-viewer
+        id="model-viewer"
+        src="GLB_PlantaSuculenta.glb"
+        ar
+        ar-modes="scene-viewer quick-look"
+        camera-controls
+        auto-rotate
+        environment-image="neutral"
+        style="display: none;" <!-- Ocultar hasta que cargue -->
+    >
+        <button id="ar-button" slot="ar-button">Ver en AR</button>
+    </model-viewer>
 
-    async function changeTexture(textureName) {
-        console.log("Intentando cambiar a textura:", textureName); // Debug
-        const modelViewer = document.querySelector('#model-viewer');
-        try {
-            const model = await modelViewer.model;
-            const texture = await loadTexture(textureName);
+    <div class="texture-buttons">
+        <button class="texture-btn" onclick="changeTexture('Textura_platasuculenta.png')">Textura Natural</button>
+        <button class="texture-btn" onclick="changeTexture('Textura_platasuculenta2.png')">Textura Artística</button>
+    </div>
+
+    <script type="module">
+        const MODEL_URL = "GLB_PlantaSuculenta.glb"; // Ruta relativa (mismo directorio)
+        const REPO_URL = "https://testachile.github.io/ModeloAR2/";
+        const textureCache = {};
+        let modelViewer;
+
+        // Mostrar errores en pantalla
+        function showError(message) {
+            document.getElementById('loading-text').textContent = `Error: ${message}`;
+            console.error(message);
+        }
+
+        // Inicializar Model Viewer
+        async function initModelViewer() {
+            modelViewer = document.querySelector('#model-viewer');
             
-            if (!texture) {
-                alert("Error: Textura no encontrada. Ver consola para detalles.");
-                return;
+            try {
+                // Verificar si el modelo carga
+                modelViewer.addEventListener('error', () => {
+                    showError("No se pudo cargar el modelo 3D. Verifica la consola.");
+                });
+
+                // Mostrar cuando esté listo
+                modelViewer.addEventListener('load', () => {
+                    document.getElementById('loading-text').style.display = 'none';
+                    modelViewer.style.display = 'block';
+                    console.log("Modelo cargado correctamente");
+                });
+            } catch (error) {
+                showError("Error inicializando Model Viewer: " + error.message);
             }
-
-            model.materials.forEach((material, index) => {
-                if (material.pbrMetallicRoughness) {
-                    console.log(`Aplicando textura al material ${index}`); // Debug
-                    material.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
-                }
-            });
-            console.log("¡Textura cambiada con éxito!"); // Debug
-        } catch (error) {
-            console.error("Error cambiando textura:", error);
         }
-    }
 
-    // Precargar texturas
-    window.addEventListener('load', () => {
-        loadTexture('Textura_platasuculenta.png');
-        loadTexture('Textura_platasuculenta2.png');
-    });
-</script>
+        // Cargar texturas
+        async function loadTexture(textureName) {
+            const textureUrl = `${REPO_URL}${textureName}`;
+            if (!textureCache[textureUrl]) {
+                try {
+                    console.log("Cargando textura:", textureUrl);
+                    const response = await fetch(textureUrl);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const blob = await response.blob();
+                    textureCache[textureUrl] = await createImageBitmap(blob);
+                    console.log("Textura cargada:", textureName);
+                } catch (error) {
+                    showError(`No se pudo cargar la textura: ${textureName}. ¿Está en ${textureUrl}?`);
+                    return null;
+                }
+            }
+            return textureCache[textureUrl];
+        }
+
+        // Cambiar textura
+        async function changeTexture(textureName) {
+            try {
+                const texture = await loadTexture(textureName);
+                if (!texture) return;
+
+                const model = await modelViewer.model;
+                model.materials.forEach((material) => {
+                    if (material.pbrMetallicRoughness) {
+                        material.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
+                    }
+                });
+                console.log("Textura cambiada a:", textureName);
+            } catch (error) {
+                showError("Error cambiando textura: " + error.message);
+            }
+        }
+
+        // Iniciar todo
+        window.addEventListener('load', () => {
+            initModelViewer();
+            // Precargar texturas
+            loadTexture('Textura_platasuculenta.png');
+            loadTexture('Textura_platasuculenta2.png');
+        });
+    </script>
+</body>
+</html>
