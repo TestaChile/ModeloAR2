@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Modelo 3D en Realidad Aumentada</title>
+    <title>Modelo 3D en Realidad Aumentada v.2</title>
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <style>
         body {
@@ -64,12 +64,12 @@
     
     <model-viewer
         src="GLB_PlantaSuculenta.glb"
-        alt="Planta suculenta en macetero de diseño - Modelo 3D para decoración" // por si no carga el modelo
-        loading="eager" //para que cargue mas rapido 
-        shadow-intensity="1" //sombra del modelo 3D
-        auto-rotate //giro automatico
-        rotation-per-second="30deg" //velocidad de giro
-        ar //opcion de realidad aumentada
+        alt="Planta suculenta en macetero de diseño - Modelo 3D para decoración"
+        loading="eager"
+        shadow-intensity="1"
+        auto-rotate
+        rotation-per-second="30deg"
+        ar
         ar-modes="scene-viewer quick-look"
         camera-controls
         environment-image="neutral"
@@ -84,16 +84,62 @@
         <button class="texture-btn" id="btn-rojo">Macetero Rojo</button>
     </div>
 
-    <script>
-        // Función para alternar el estado "active" de los botones
-        document.getElementById('btn-azul').addEventListener('click', function() {
-            this.classList.add('active');
-            document.getElementById('btn-rojo').classList.remove('active');
+    <script type="module">
+        // Precargar texturas (usa rutas absolutas para GitHub Pages)
+        const REPO_URL = "https://testachile.github.io/ModeloAR2/"; // Asegúrate de que coincida con tu repo
+        const textureCache = {};
+        const modelViewer = document.querySelector('model-viewer');
+
+        // Función para alternar el estado "active" y cambiar texturas
+        async function handleTextureChange(selectedBtn, textureName) {
+            // Actualizar estado visual de los botones
+            document.querySelectorAll('.texture-btn').forEach(btn => btn.classList.remove('active'));
+            selectedBtn.classList.add('active');
+            
+            // Cambiar textura del modelo
+            try {
+                const textureUrl = `${REPO_URL}${textureName}`;
+                const response = await fetch(textureUrl);
+                if (!response.ok) throw new Error(`Error al cargar: ${textureName}`);
+                
+                const blob = await response.blob();
+                const texture = await createImageBitmap(blob);
+                const model = await modelViewer.model;
+                
+                if (model) {
+                    model.materials.forEach(material => {
+                        if (material.pbrMetallicRoughness) {
+                            material.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
+                        }
+                    });
+                    console.log(`Textura cambiada a: ${textureName}`);
+                }
+            } catch (error) {
+                console.error("Error cambiando textura:", error);
+                alert("No se pudo cargar la textura. Ver consola para detalles.");
+            }
+        }
+
+        // Asignar eventos a los botones
+        document.getElementById('btn-azul').addEventListener('click', () => {
+            handleTextureChange(this, 'Textura_platasuculenta.png');
         });
 
-        document.getElementById('btn-rojo').addEventListener('click', function() {
-            this.classList.add('active');
-            document.getElementById('btn-azul').classList.remove('active');
+        document.getElementById('btn-rojo').addEventListener('click', () => {
+            handleTextureChange(this, 'Textura_platasuculenta2.png');
+        });
+
+        // Precargar texturas al inicio (opcional)
+        window.addEventListener('load', async () => {
+            try {
+                await Promise.all([
+                    fetch(`${REPO_URL}Textura_platasuculenta.png`),
+                    fetch(`${REPO_URL}Textura_platasuculenta2.png`)
+                ]);
+                console.log("Texturas precargadas");
+            } catch (error) {
+                console.warn("No se pudieron precargar texturas:", error);
+            }
         });
     </script>
 </body>
