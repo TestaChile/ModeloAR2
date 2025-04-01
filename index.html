@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Testa Chile | Catálogo en Realidad Aumentada</title>
+    <title>Personalizador de Plantas Suculentas</title>
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <style>
         body {
@@ -13,47 +13,98 @@
         }
         h1 {
             color: #6e48aa;
-            margin-bottom: 10px;
         }
-        p {
-            color: #666;
-            font-size: 18px;
-        }
-        model-viewer {
-            width: 100%;
-            height: 70vh;
+        .texture-buttons {
             margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
         }
-        button[slot="ar-button"] {
+        .texture-btn {
             background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
             color: white;
             border: none;
             padding: 12px 24px;
             border-radius: 30px;
-            font-size: 16px;
             cursor: pointer;
-            margin: 10px;
+            font-size: 16px;
+            transition: transform 0.3s;
+        }
+        .texture-btn:hover {
+            transform: scale(1.05);
+        }
+        model-viewer {
+            width: 100%;
+            height: 70vh;
+            margin: 0 auto;
+        }
+        #ar-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            margin-top: 20px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Modelo 3D en Realidad Aumentada V.2</h1>
-    <p>¡Visualiza nuestra planta suculenta en Realidad Aumentada!</p>
+    <h1>Personaliza tu Planta Suculenta</h1>
     
     <model-viewer
+        id="model-viewer"
         src="GLB_PlantaSuculenta.glb"
-	alt="Planta suculenta en macetero de diseño - Modelo 3D para decoración"
-	loading="eager"
-	shadow-intensity="0.5"
-	auto-rotate
-	rotation-per-second="50deg"
         ar
         ar-modes="scene-viewer quick-look"
         camera-controls
+        auto-rotate
         environment-image="neutral"
-	interaction-prompt="none"
     >
-        <button slot="ar-button">Ver en AR</button>
+        <button id="ar-button" slot="ar-button">Ver en AR</button>
     </model-viewer>
+
+    <div class="texture-buttons">
+        <button class="texture-btn" onclick="changeTexture('Textura_platasuculenta1.png')">Textura Natural</button>
+        <button class="texture-btn" onclick="changeTexture('Textura_platasuculenta2.png')">Textura Artística</button>
+    </div>
+
+    <script type="module">
+        // Cargar las texturas desde GitHub
+        const textureCache = {};
+        
+        async function loadTexture(textureUrl) {
+            if (!textureCache[textureUrl]) {
+                const response = await fetch(textureUrl);
+                const blob = await response.blob();
+                textureCache[textureUrl] = await createImageBitmap(blob);
+            }
+            return textureCache[textureUrl];
+        }
+
+        // Cambiar textura del modelo
+        async function changeTexture(textureUrl) {
+            const modelViewer = document.querySelector('#model-viewer');
+            const model = await modelViewer.model;
+            
+            if (model) {
+                const texture = await loadTexture(textureUrl);
+                // Aplicar a todos los materiales (o ajusta el índice si solo quieres cambiar uno)
+                model.materials.forEach(material => {
+                    if (material.pbrMetallicRoughness) {
+                        material.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
+                    }
+                });
+                
+                console.log(`Textura cambiada a: ${textureUrl}`);
+            }
+        }
+
+        // Precargar texturas al iniciar
+        window.addEventListener('load', () => {
+            loadTexture('textura_platasuculenta1.png');
+            loadTexture('textura_platasuculenta2.png');
+        });
+    </script>
 </body>
 </html>
