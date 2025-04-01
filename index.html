@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Modelo 3D en Realidad Aumentada</title>
+    <title>Modelo 3D en Realidad Aumentada V.2</title>
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <style>
         body {
@@ -42,10 +42,16 @@
     
     <model-viewer
         src="GLB_PlantaSuculenta.glb"
+	alt="Planta suculenta en macetero de diseño - Modelo 3D para decoración"
+	loading="eager"
+	shadow-intensity="1"
+	auto-rotate
+	rotation-per-second="30deg"
         ar
         ar-modes="scene-viewer quick-look"
         camera-controls
         environment-image="neutral"
+	interaction-prompt="none"
     >
         <button slot="ar-button">Ver en AR</button>
     </model-viewer>
