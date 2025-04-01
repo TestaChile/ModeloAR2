@@ -1,110 +1,52 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Personalizador de Plantas Suculentas</title>
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: #f9f9f9;
-        }
-        h1 {
-            color: #6e48aa;
-        }
-        .texture-buttons {
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-        .texture-btn {
-            background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: transform 0.3s;
-        }
-        .texture-btn:hover {
-            transform: scale(1.05);
-        }
-        model-viewer {
-            width: 100%;
-            height: 70vh;
-            margin: 0 auto;
-        }
-        #ar-button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 30px;
-            margin-top: 20px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <h1>Personaliza tu Planta Suculenta</h1>
+<script type="module">
+    const REPO_URL = "https://testachile.github.io/ModeloAR2/";
+    const textureCache = {};
     
-    <model-viewer
-        id="model-viewer"
-        src="GLB_PlantaSuculenta.glb"
-        ar
-        ar-modes="scene-viewer quick-look"
-        camera-controls
-        auto-rotate
-        environment-image="neutral"
-    >
-        <button id="ar-button" slot="ar-button">Ver en AR</button>
-    </model-viewer>
-
-    <div class="texture-buttons">
-        <button class="texture-btn" onclick="changeTexture('Textura_platasuculenta.png')">Textura Natural</button>
-        <button class="texture-btn" onclick="changeTexture('Textura_platasuculenta2.png')">Textura Artística</button>
-    </div>
-
-    <script type="module">
-        // Cargar las texturas desde GitHub
-        const textureCache = {};
-        
-        async function loadTexture(textureUrl) {
-            if (!textureCache[textureUrl]) {
+    async function loadTexture(textureName) {
+        const textureUrl = `${REPO_URL}${textureName}`;
+        if (!textureCache[textureUrl]) {
+            try {
+                console.log("Cargando textura:", textureUrl); // Debug
                 const response = await fetch(textureUrl);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const blob = await response.blob();
                 textureCache[textureUrl] = await createImageBitmap(blob);
+                console.log("Textura cargada con éxito:", textureName); // Debug
+            } catch (error) {
+                console.error("Error cargando textura:", error);
+                return null;
             }
-            return textureCache[textureUrl];
         }
+        return textureCache[textureUrl];
+    }
 
-        // Cambiar textura del modelo
-        async function changeTexture(textureUrl) {
-            const modelViewer = document.querySelector('#model-viewer');
+    async function changeTexture(textureName) {
+        console.log("Intentando cambiar a textura:", textureName); // Debug
+        const modelViewer = document.querySelector('#model-viewer');
+        try {
             const model = await modelViewer.model;
+            const texture = await loadTexture(textureName);
             
-            if (model) {
-                const texture = await loadTexture(textureUrl);
-                // Aplicar a todos los materiales (o ajusta el índice si solo quieres cambiar uno)
-                model.materials.forEach(material => {
-                    if (material.pbrMetallicRoughness) {
-                        material.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
-                    }
-                });
-                
-                console.log(`Textura cambiada a: ${textureUrl}`);
+            if (!texture) {
+                alert("Error: Textura no encontrada. Ver consola para detalles.");
+                return;
             }
-        }
 
-        // Precargar texturas al iniciar
-        window.addEventListener('load', () => {
-            loadTexture('Textura_platasuculenta.png');
-            loadTexture('Textura_platasuculenta2.png');
-        });
-    </script>
-</body>
-</html>
+            model.materials.forEach((material, index) => {
+                if (material.pbrMetallicRoughness) {
+                    console.log(`Aplicando textura al material ${index}`); // Debug
+                    material.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
+                }
+            });
+            console.log("¡Textura cambiada con éxito!"); // Debug
+        } catch (error) {
+            console.error("Error cambiando textura:", error);
+        }
+    }
+
+    // Precargar texturas
+    window.addEventListener('load', () => {
+        loadTexture('Textura_platasuculenta.png');
+        loadTexture('Textura_platasuculenta2.png');
+    });
+</script>
