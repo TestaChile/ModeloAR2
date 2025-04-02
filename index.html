@@ -59,7 +59,7 @@
     </style>
 </head>
 <body>
-    <h1>Modelo 3D en Realidad Aumentada V.2.1</h1>
+    <h1>Modelo 3D en Realidad Aumentada V.2.2</h1>
     <p>¡Decora tu espacio con este diseño en Realidad Aumentada!</p>
     
     <model-viewer id="modelo3D"
@@ -85,27 +85,17 @@
     </div>
 
     <script>
-  document.addEventListener("DOMContentLoaded", async function() {
+    document.addEventListener("DOMContentLoaded", function() {
         const modelViewer = document.getElementById("modelo3D");
 
-        // Espera a que el modelo se cargue completamente
-        await modelViewer.updateComplete;
-
-        // Obtiene los materiales del modelo
-        const material = modelViewer.model.materials[0];
-
-        // Carga las texturas en el material
-        const textureAzul = await modelViewer.createTexture("Textura_platasuculenta.png");
-        const textureRojo = await modelViewer.createTexture("Textura_platasuculente2.png");
-
         document.getElementById("btn-azul").addEventListener("click", function() {
-            material.pbrMetallicRoughness.baseColorTexture.setTexture(textureAzul);
+            modelViewer.src = "GLB_PlantaSuculentaAzul.glb";
             this.classList.add("active");
             document.getElementById("btn-rojo").classList.remove("active");
         });
 
         document.getElementById("btn-rojo").addEventListener("click", function() {
-            material.pbrMetallicRoughness.baseColorTexture.setTexture(textureRojo);
+            modelViewer.src = "GLB_PlantaSuculentaRojo.glb";
             this.classList.add("active");
             document.getElementById("btn-azul").classList.remove("active");
         });
